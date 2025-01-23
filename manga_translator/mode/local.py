@@ -159,7 +159,7 @@ class MangaTranslatorLocal(MangaTranslator):
             with open(path, 'r') as f:
                 queries = f.read().split('\n')
             translated_sentences = \
-                await dispatch_translation(config.translator.translator_gen, queries, self.use_mtpe, ctx,
+                await dispatch_translation(config.translator.translator_gen, queries, None, self.use_mtpe, ctx,
                                            'cpu' if self._gpu_limited_memory else self.device)
             p, ext = os.path.splitext(dest)
             if ext != '.txt':

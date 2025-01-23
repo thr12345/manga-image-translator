@@ -14,6 +14,9 @@ from .common import CommonTranslator, MissingAPIKeyException
 from .keys import GEMINI_API_KEY
 CONFIG = None
 
+GEMINI_MODEL="gemini-1.5-flash"
+
+
 class GPT3Translator(CommonTranslator):
     _LANGUAGE_CODE_MAP = {
         'CHS': 'Simplified Chinese',
@@ -186,7 +189,7 @@ class GPT3Translator(CommonTranslator):
 
     async def _request_translation(self, to_lang: str, prompt: str) -> str:
         response = await self.client.completions.create(
-            model='gemini-1.5-flash',
+            model=GEMINI_MODEL,
             prompt=prompt,
             max_tokens=self._MAX_TOKENS // 2, # Assuming that half of the tokens are used for the query
             temperature=self.temperature,
@@ -283,7 +286,7 @@ class GPT35TurboTranslator(GPT3Translator):
             return txt
 
         response = await self.client.chat.completions.create(
-            model='gemini-1.5-flash',
+            model=GEMINI_MODEL,
             messages=messages,
             max_tokens=self._MAX_TOKENS // 2,
             temperature=self.temperature,
@@ -324,6 +327,8 @@ class GeminiTranslator(GPT35TurboTranslator):
         ]
 
         def strip_first_line(txt: str) :
+            if not isinstance(txt, str):
+                return ""
             # find <1>
             loc = txt.find('<|1|>')
             if loc == -1:
@@ -332,7 +337,7 @@ class GeminiTranslator(GPT35TurboTranslator):
             return txt
 
         response = await self.client.chat.completions.create(
-            model='gemini-1.5-flash',
+            model=GEMINI_MODEL,
             messages=messages,
             max_tokens=self._MAX_TOKENS // 2,
             temperature=self.temperature,
@@ -346,4 +351,7 @@ class GeminiTranslator(GPT35TurboTranslator):
                 return strip_first_line(choice.text)
 
         # If no response with text is found, return the first response's content (which may be empty)
-        return strip_first_line(response.choices[0].message.content)
+        if len(response.choices) > 0:
+            return strip_first_line(response.choices[0].message.content)
+        
+        return ""

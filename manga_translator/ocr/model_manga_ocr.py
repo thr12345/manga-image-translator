@@ -248,7 +248,7 @@ class ModelMangaOCR(OfflineOCR):
             bg_b = []
             
             for idx in nodes:
-                if idx not in out_regions:
+                if idx not in out_regions or out_regions[idx].area == 0:
                     continue
                     
                 total_logprobs += np.log(out_regions[idx].prob) * out_regions[idx].area
@@ -259,7 +259,10 @@ class ModelMangaOCR(OfflineOCR):
                 bg_r.append(out_regions[idx].bg_r)
                 bg_g.append(out_regions[idx].bg_g)
                 bg_b.append(out_regions[idx].bg_b)
-                
+            
+            if total_area == 0:
+                continue
+
             total_logprobs /= total_area
             prob = np.exp(total_logprobs)
             fr = round(np.mean(fg_r))
