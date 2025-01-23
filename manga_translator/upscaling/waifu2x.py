@@ -74,9 +74,12 @@ class Waifu2xUpscaler(OfflineUpscaler): # ~2GB of vram
 
         try:
             self._run_waifu2x_executable(in_dir, out_dir, upscale_ratio, 0)
-        except Exception:
+        except Exception as e:
             # Maybe throw exception instead
-            self.logger.warn(f'Process returned non-zero exit status. Skipping upscaling.')
+            if e.__class__.__name__ == "PermissionError":
+                self.logger.warning('waifu2x upscaler threw a Permission error except, is the model exceutable?')
+            self.logger.warning(e)
+            self.logger.warning(f'Process returned non-zero exit status. Skipping upscaling.')
             return image_batch
 
         output_batch = []
