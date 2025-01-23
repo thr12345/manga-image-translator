@@ -24,6 +24,7 @@ from .groq import GroqTranslator
 from .ollama import OllamaTranslator
 from ..config import Translator, TranslatorConfig, TranslatorChain
 from ..utils import Context
+from .gemini import GeminiTranslator
 
 OFFLINE_TRANSLATORS = {
     Translator.offline: SelectiveOfflineTranslator,
@@ -53,7 +54,8 @@ TRANSLATORS = {
     Translator.original: OriginalTranslator,
     Translator.sakura: SakuraTranslator,
     Translator.deepseek: DeepseekTranslator,
-    Translator.groq:GroqTranslator,
+    Translator.groq: GroqTranslator,
+    Translator.gemini: GeminiTranslator,
     Translator.ollama: OllamaTranslator,
     **OFFLINE_TRANSLATORS,
 }
