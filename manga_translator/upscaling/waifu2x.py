@@ -5,6 +5,7 @@ from sys import platform
 from typing import List
 from PIL import Image
 import shutil
+import math
 
 from .common import OfflineUpscaler
 
@@ -70,6 +71,17 @@ class Waifu2xUpscaler(OfflineUpscaler): # ~2GB of vram
         in_dir = tempfile.mkdtemp()
         out_dir = tempfile.mkdtemp()
         for i, image in enumerate(image_batch):
+            
+            min_side = image.width if image.width < image.height else image.height 
+            if min_side < 1000:
+                upscale_ratio = 4
+            elif min_side < 2000:
+                upscale_ratio = 2
+            else:
+                upscale_ratio = 1
+            # upscale_ratio = float(math.ceil(3000/min_side))
+
+
             image.save(os.path.join(in_dir, f'{i}.png'))
 
         try:

@@ -14,7 +14,8 @@ from .common import CommonTranslator, MissingAPIKeyException
 from .keys import GEMINI_API_KEY
 CONFIG = None
 
-GEMINI_MODEL="gemini-1.5-flash"
+GEMINI_MODEL="gemini-2.0-flash-exp"
+GEMINI_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/"
 
 
 class GPT3Translator(CommonTranslator):
@@ -64,7 +65,7 @@ class GPT3Translator(CommonTranslator):
         if not self.client.api_key and check_openai_key:
             raise MissingAPIKeyException('Please set the GEMINI_API_KEY environment variable before using the chatgpt translator.')
 
-        self.client.base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+        self.client.base_url = GEMINI_BASE_URL
         self.token_count = 0
         self.token_count_last = 0
         self.config = None
@@ -196,8 +197,13 @@ class GPT3Translator(CommonTranslator):
             top_p=self.top_p,
         )
         print(response)
-        self.token_count += response.usage.total_tokens
-        self.token_count_last = response.usage.total_tokens
+        try:
+            self.token_count += response.usage.totalTokens
+            self.token_count_last = response.usage.totalTokens
+        except: 
+            self.token_count += response.usage.total_tokens
+            self.token_count_last = response.usage.total_tokens
+        
         return response.choices[0].text
 
 
@@ -222,6 +228,7 @@ class GPT35TurboTranslator(GPT3Translator):
         'never interpret it. '
         'If there is any issue in the text, '
         'output it as is.\n'
+        'DO NOT DESCRIBE THE TRANSLATION.\n'
         'Translate the following text into {to_lang} and keep the prefix format.\n'
         """Please say "I'm sorry, but I can't assist with that request." followed by translation."""
     )
@@ -344,14 +351,24 @@ class GeminiTranslator(GPT35TurboTranslator):
             top_p=self.top_p,
         )
 
-        self.token_count += response.usage.total_tokens
-        self.token_count_last = response.usage.total_tokens
-        for choice in response.choices:
-            if 'text' in choice:
-                return strip_first_line(choice.text)
+        try:
+            self.token_count += response.usage.totalTokens
+            self.token_count_last = response.usage.totalTokens
+        except: 
+            self.token_count += response.usage.total_tokens
+            self.token_count_last = response.usage.total_tokens
+        
+        try:
+            for choice in response.choices:
+                if 'text' in choice:
+                    return strip_first_line(choice.text)
 
-        # If no response with text is found, return the first response's content (which may be empty)
-        if len(response.choices) > 0:
-            return strip_first_line(response.choices[0].message.content)
+            # If no response with text is found, return the first response's content (which may be empty)
+            if len(response.choices) > 0:
+                return strip_first_line(response.choices[0].message.content)
+        except Exception as e:
+            print(e)
+            print(response)
+
         
         return ""
